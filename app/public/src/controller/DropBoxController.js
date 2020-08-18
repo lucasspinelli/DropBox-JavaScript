@@ -37,7 +37,7 @@ class DropBoxController {
 
                 let ajax = new XMLHttpRequest();
 
-                ajax.open('POST','/upload')
+                ajax.open('POST','/upload');
 
                 ajax.onload = event => { //invocando o ajax assim que carregar 
 
