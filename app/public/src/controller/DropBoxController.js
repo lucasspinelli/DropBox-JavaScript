@@ -68,6 +68,8 @@ class DropBoxController {
 
                 formData.append('input-file', file); // append é para juntar
 
+                this.startUploadTime = Date.now();
+
                 ajax.send(formData); // usando a API form data para enviar arquivo
 
             }));
@@ -80,16 +82,35 @@ class DropBoxController {
 
     uploadProgress(event, file){
 
+        let timespent = Date.now() - this.startUploadTime;
         let loaded = event.loaded;
         let total = event.total;
-
         let porcent = parseInt((loaded / total ) * 100);
-
+        let timeleft = ((100-porcent) * timespent)/porcent;
         this.progressBarEl.style.width = `${porcent}%`;
 
         this.nameFileEl.innerHTML = file.name;
-        this.timeLeftEl.innerHTML = '';
+        this.timeLeftEl.innerHTML = this.formatTimeToHuman(timeleft);
+
 
     }
+
+    formatTimeToHuman(duration){
+        let seconds = parseInt((duration / 1000) % 60);
+        let minutes = parseInt(duration / (1000 * 60) % 60);
+        let hour = parseInt(duration / (1000 * 60 * 60) % 24);
+
+        if (hour > 0){
+            return `${hour} horas , ${minutes} minutos e ${seconds} segundos`;
+        }
+        if (minutes > 0){
+            return `${minutes} minutos e ${seconds} segundos`;
+        }
+        if (seconds > 0){
+            return `${seconds} segundos`;
+        }
+
+        return '';
+    }// Formatando tempo para os humanos E X P L I C A T I V O
 
 }
