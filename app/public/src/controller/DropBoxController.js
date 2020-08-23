@@ -374,7 +374,37 @@ class DropBoxController {
 
             if(e.shiftKey){ // selecionando com o shift
 
-                
+                let firstLi = this.listFilesEl.querySelector('.selected');
+            
+                if (firstLi){
+
+                    let indexStart;
+                    let indexEnd;
+                    let lis = li.parentElement.childNodes;
+
+                    lis.forEach((el, index) =>{
+
+                        if(firstLi === el) indexStart = index; 
+                        if(li === el) indexEnd = index; 
+
+
+                    }); //ir para o elemento pai, para procurar o filho
+
+                    let index = [indexStart, indexEnd].sort(); // coloca de forma ordenada
+
+                    lis.forEach((el, i) =>{
+
+                        if(i >= index[0] && i <= index[1]){
+
+                            el.classList.add('selected');
+
+                        }
+
+                    });
+
+                    return true;
+
+                }
 
             }
 
