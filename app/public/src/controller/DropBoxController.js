@@ -372,6 +372,23 @@ class DropBoxController {
 
         li.addEventListener('click', e=>{
 
+            if(e.shiftKey){ // selecionando com o shift
+
+                
+
+            }
+
+            if (!e.ctrlKey){
+
+                this.listFilesEl.querySelectorAll('li.selected').forEach(el=>{
+
+                    el.classList.remove('selected');
+
+                });
+
+            } // se o ctrl não tivesse apertado
+
+
             li.classList.toggle('selected');
 
         } );
