@@ -2,7 +2,7 @@ class DropBoxController {
 
     constructor(){
 
-        this.onselectionchance = new Event ('selectionchance');
+        this.onselectionchange = new Event ('selectionchange');
 
         this.btnSendFileEl = document.querySelector('#btn-send-file');
         this.inputFilesEl = document.querySelector('#files');
@@ -39,11 +39,34 @@ class DropBoxController {
         firebase.initializeApp(firebaseConfig);
 
     }
+    getSelection(){
+
+        return this.listFilesEl.querySelectorAll('.selected');
+
+    }
+
     initEvents(){
 
-        this.listFilesEl.addEventListener('selectionchance', e => {
+        this.listFilesEl.addEventListener('selectionchange', e => {
 
-            console.log('porra');
+            switch(this.getSelection().length){
+
+                case 0:
+                    this.btnDelete.style.display = 'none';
+                    this.btnRename.style.display = 'none';
+                    break;
+
+                case 1:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'block';
+                    break;
+                    
+                default:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'none';
+                    break;
+
+            }
 
         });
 
@@ -386,7 +409,6 @@ class DropBoxController {
 
         li.addEventListener('click', e=>{
 
-            this.listFilesEl.dispatchEvent(this.onselectionchance);
 
             if(e.shiftKey){ // selecionando com o shift
 
@@ -418,6 +440,8 @@ class DropBoxController {
 
                     });
 
+                    this.listFilesEl.dispatchEvent(this.onselectionchange);
+
                     return true;
 
                 }
@@ -436,6 +460,8 @@ class DropBoxController {
 
 
             li.classList.toggle('selected');
+
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
         } );
 
