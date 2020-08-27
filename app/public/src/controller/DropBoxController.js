@@ -53,11 +53,12 @@ class DropBoxController {
 
             let file = JSON.parse(li.dataset.file);
 
-            promises.push(new Promise((resolve, reject)=>{
+            let formData = new FormData();
 
-                
+            formData.append('path', file.path);
+            formData.append('key', file.key);
 
-            }));
+            promises.push(this.ajax('/file','DELETE', formData));
 
             return Promise.all(promises);
 
@@ -219,21 +220,17 @@ class DropBoxController {
 
         [...files].forEach(file=>{
 
-            promises.push(new Promise((resolve, reject)=>{
+            let formData = new FormData ();
 
-                let formData = new FormData ();
+            formData.append('input-file', file); // append é para juntar
 
-                formData.append('input-file', file); // append é para juntar
+            promises.push(this.ajax('/upload','POST', formData , ()=>{
 
-                this.ajax('/upload','POST', formData , ()=>{
+                this.uploadProgress(event, file);
 
-                    this.uploadProgress(event, file);
+            }, ()=>{
 
-                }, ()=>{
-
-                    this.startUploadTime = Date.now();
-
-                });
+                this.startUploadTime = Date.now();
 
             }));
 
