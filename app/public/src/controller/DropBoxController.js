@@ -45,7 +45,41 @@ class DropBoxController {
 
     }
 
+    removeTask(){ // Excluir Arquivos 
+
+        let promises = [];
+
+        this.getSelection().forEach(li=>{
+
+            let file = JSON.parse(li.dataset.file);
+
+            promises.push(new Promise((resolve, reject)=>{
+
+                
+
+            }));
+
+            return Promise.all(promises);
+
+        });
+
+    }
+
     initEvents(){
+
+        this.btnDelete.addEventListener('click', e=>{
+
+            this.removeTask().then(responses=>{
+
+
+
+            }).catch(err=>{
+
+                console.error(err);
+
+            });
+
+        });
 
         this.btnRename.addEventListener('click', e=>{
 
@@ -143,6 +177,42 @@ class DropBoxController {
 
     }
 
+    ajax(url, method = 'GET', formData = new FormData(), onprogress = function(){}, onloadstart = function(){}) {
+
+        return new Promise((resolve, reject)=>{
+
+            let ajax = new XMLHttpRequest();
+
+            ajax.open(method ,url);
+    
+            ajax.onload = event => { //invocando o ajax assim que carregar 
+                                    
+                try {
+                    resolve(JSON.parse(ajax.responseText));
+                } catch (e){
+                    reject(e);
+                }
+    
+            };
+            ajax.onerror = event =>{ //Caso erro ao fazer upload
+    
+                reject(event);
+    
+            };
+    
+            ajax.upload.onprogress = onprogress;
+    
+    
+            onloadstart();
+    
+            ajax.send(formData); // usando a API form data para enviar arquivo
+
+        });
+
+       
+
+    }
+
     uploadTask(files){
 
         let promises = []; // subir um arquivo ou subir vários
@@ -151,39 +221,19 @@ class DropBoxController {
 
             promises.push(new Promise((resolve, reject)=>{
 
-                let ajax = new XMLHttpRequest();
-
-                ajax.open('POST','/upload');
-
-                ajax.onload = event => { //invocando o ajax assim que carregar 
-                                        
-                    try {
-                        resolve(JSON.parse(ajax.responseText));
-                    } catch (e){
-                        reject(e);
-                    }
-
-                };
-                ajax.onerror = event =>{ //Caso erro ao fazer upload
-
-                    reject(event);
-
-                };
-
-                ajax.upload.onprogress = event => { //A cada byte enviado para o servidor, irá executar a função 
-
-                    this.uploadProgress(event, file);
-                   
-
-                };
-
                 let formData = new FormData ();
 
                 formData.append('input-file', file); // append é para juntar
 
-                this.startUploadTime = Date.now();
+                this.ajax('/upload','POST', formData , ()=>{
 
-                ajax.send(formData); // usando a API form data para enviar arquivo
+                    this.uploadProgress(event, file);
+
+                }, ()=>{
+
+                    this.startUploadTime = Date.now();
+
+                });
 
             }));
 
