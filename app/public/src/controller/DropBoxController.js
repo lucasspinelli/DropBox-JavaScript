@@ -2,10 +2,11 @@ class DropBoxController {
 
     constructor(){
 
-        this.currentFolder = ['hcode'];
+        this.currentFolder = ['Lucas DropBox'];
 
         this.onselectionchange = new Event ('selectionchange');
 
+        this.navEl = document.querySelector('#browse-location');
         this.btnSendFileEl = document.querySelector('#btn-send-file');
         this.inputFilesEl = document.querySelector('#files');
         this.snackModalEl = document.querySelector('#react-snackbar-root');
@@ -494,7 +495,11 @@ class DropBoxController {
                 let key = snapshotItem.key;
                 let data = snapshotItem.val();
 
+                if(data.type){
+
                 this.listFilesEl.appendChild(this.getFileView(data, key))
+                }
+
             });
 
         });
@@ -505,7 +510,66 @@ class DropBoxController {
 
         if(this.lastFolder) this.getFirebaseRef(this.lastFolder).off('value'); //on ('value') = olhar, ao contrario, parar
 
+        this.renderNav();
         this.readFiles();
+
+    }
+
+    renderNav(){
+
+        let nav = document.createElement('nav');
+        let path = [];
+
+        for (let i = 0; i < this.currentFolder.length; i++){
+
+            let folderName = this.currentFolder[i];
+            let span = document.createElement('span');
+
+            path.push(folderName);            
+            nav.appendChild(span);
+
+            if ((i+1) === this.currentFolder.length){
+
+                span.innerHTML = folderName;
+
+            } else {
+
+                span.className = 'breadcrumb-segment__wrapper';
+                span.innerHTML = ` 
+                    <span class="ue-effect-container uee-BreadCrumbSegment-link-0">
+                        <a href="#" data-path="${path.join('/')}" class="breadcrumb-segment">${folderName}</a>
+                    </span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" class="mc-icon-template-stateless" style="top: 4px; position: relative;">
+                        <title>arrow-right</title>
+                        <path d="M10.414 7.05l4.95 4.95-4.95 4.95L9 15.534 12.536 12 9 8.464z" fill="#637282" fill-rule="evenodd"></path>
+                    </svg>
+            `;
+
+
+            }
+
+            nav.appendChild(span);
+
+        }
+
+        this.navEl.innerHTML = nav.innerHTML;
+
+        this.navEl.querySelectorAll('a').forEach(a=>{
+
+            a.addEventListener('click', e=>{
+
+                e.preventDefault();
+
+                this.currentFolder = a.dataset.path.split('/');
+
+                this.openFolder();
+                
+
+            });
+
+        });
+
+        
 
     }
 
