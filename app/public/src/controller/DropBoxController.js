@@ -17,12 +17,10 @@ class DropBoxController {
         this.btnNewFolder = document.querySelector("#btn-new-folder");
         this.btnRename = document.querySelector("#btn-rename");
         this.btnDelete = document.querySelector("#btn-delete");
-
-        this.btnNewFolder = document.query
-
+ 
         this.connectFireBase();
         this.initEvents();
-        this.readFiles();
+        this.openFolder();
 
     }
     connectFireBase(){
@@ -193,9 +191,11 @@ class DropBoxController {
 
     }
 
-    getFirebaseRef(){
+    getFirebaseRef(path){
 
-        return firebase.database().ref('files');
+        if (!path) path = this.currentFolder.join('/');
+
+        return firebase.database().ref(path);
 
     }
 
@@ -483,6 +483,8 @@ class DropBoxController {
 
     readFiles(){
 
+        this.lastFolder = this.currentFolder.join('/');
+
         this.getFirebaseRef().on('value', snapshot => {
 
             this.listFilesEl.innerHTML = '';
@@ -498,7 +500,36 @@ class DropBoxController {
         });
 
     }
+
+    openFolder(){
+
+        if(this.lastFolder) this.getFirebaseRef(this.lastFolder).off('value'); //on ('value') = olhar, ao contrario, parar
+
+        this.readFiles();
+
+    }
+
     initEventsLi(li){
+
+        li.addEventListener('dblclick', e=>{
+
+            let file = JSON.parse(li.dataset.file);
+
+            switch(file.type){
+
+                case 'folder':
+
+                    this.currentFolder.push(file.name);
+                    this.openFolder();
+                    break;
+
+                default:
+                    window.open('/file?path='+file.path);
+                    break;
+
+            }
+
+        });
 
         li.addEventListener('click', e=>{
 
