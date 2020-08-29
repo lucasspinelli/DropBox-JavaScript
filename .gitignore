@@ -60,4 +60,4 @@ typings/
 # next.js build output
 .next
 app/.vscode/settings.json
-app/upload/upload_da3e2efc9e35f5ef97a788274e30cc97.png
+app/upload/*
