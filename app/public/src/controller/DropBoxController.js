@@ -161,12 +161,28 @@ class DropBoxController {
 
             this.uploadTask(event.target.files).then(responses =>{
 
-                responses.forEach(resp => {
+                responses.forEach(resp => { 
+                    resp.ref.getDownloadURL().then(data=>{
+                         this.getFirebaseRef().push().set({
+                              name: resp.name, 
+                              type: resp.contentType, 
+                              path: data, 
+                              size: resp.size
+                            });
+                        });
+                    });
+               
+                /* responses.forEach(resp => {
 
 
-                    this.getFirebaseRef().push().set(resp.files['input-file'])
+                    this.getFirebaseRef().push().set({
+                        name: resp.name,
+                        type: resp.contentType,
+                        path: data,
+                        size: resp.size
+                    });
 
-                });
+                });*/
 
                 this.uploadComplete();
 
@@ -248,19 +264,42 @@ class DropBoxController {
 
         [...files].forEach(file=>{
 
-            let formData = new FormData ();
+           promises.push(new Promise((resolve,reject)=>{
 
-            formData.append('input-file', file); // append é para juntar
 
-            promises.push(this.ajax('/upload','POST', formData , ()=>{
+            let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name)        
 
-                this.uploadProgress(event, file);
+            let task = fileRef.put(file);
+
+            task.on('state_changed',snapshot=>{
+
+                this.uploadProgress({
+                    loaded: snapshot.bytesTransferred,
+                    total: snapshot.totalBytes
+                }, file)
+
+            },error=>{
+
+                console.error(error);
+                reject(error);
 
             }, ()=>{
 
-                this.startUploadTime = Date.now();
+                fileRef.getMetadata().then(metadata=>{
 
-            }));
+                    resolve(metadata);
+
+                }).catch(err=>{
+
+                    reject(err);
+
+                });
+
+
+            });
+
+
+           }));
 
         });
 
