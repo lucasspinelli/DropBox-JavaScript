@@ -46,6 +46,63 @@ class DropBoxController {
 
     }
 
+    removeFolderTask(ref, name){
+
+        return new Promise((resolve, reject)=>{
+
+            let folderRef = this.getFirebaseRef(ref + '/' + name);
+
+            folderRef.on('value', snapshot =>{
+                
+                folderRef.off('value');
+
+                snapshot.forEach(item=>{
+
+                    let data = item.val();
+                    data.key = item.key;
+
+                    if (data.type === 'folder'){
+
+                        this.removeFolderTask(ref+ '/' + name, data.name).then(()=>{
+
+                            resolve({
+                                fields:{
+                                    key : data.key
+                                }
+
+                            });
+
+                        }).catch(err=>{
+                            reject(err);
+                        });
+
+                    }else if(data.type){
+
+                        this.removeFile(ref+ '/' + name, data.name).then(()=>{
+
+                            resolve({
+                                fields:{
+                                    key : data.key
+                                }
+
+                            });
+
+                        }).catch(err=>{
+                            reject(err);
+                        });
+
+                    }
+
+                });
+
+                folderRef.remove();
+
+            });
+
+        });
+
+    }
+
     removeTask(){ // Excluir Arquivos 
 
         let promises = [];
@@ -58,29 +115,48 @@ class DropBoxController {
            
             promises.push(new Promise((resolve, reject)=>{
 
-                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
+                if (file.type === 'folder'){
 
-                fileRef.delete().then(()=>{
+                    this.removeFolderTask(this.currentFolder.join('/'),  file.name).then(()=>{
+
+                        resolve({
+
+                            fields:{
+                                key
+                            }
+            
+                        });
+
+                    });
+
+                } else if (file.type) { 
+
+                this.removeFile(this.currentFolder.join('/'),  file.name).then(()=>{
 
                     resolve({
 
                         fields:{
                             key
                         }
-
+        
                     });
 
-                }).catch(err=>{
-
-                    reject(err);
-    
                 });
+            }
 
             }));
 
         });
 
         return Promise.all(promises);
+
+    }
+
+    removeFile(ref, name){
+        
+        let fileRef = firebase.storage().ref(ref).child(name);
+
+        return fileRef.delete();
 
     }
 
@@ -106,11 +182,11 @@ class DropBoxController {
 
             this.removeTask().then(responses=>{
 
-                responses.forEach(responses=>{
+                responses.forEach(response=>{
 
-                    if(responses.fields.key){
+                    if(response.fields.key){
 
-                        this.getFirebaseRef().child(responses.fields.key).remove();
+                        this.getFirebaseRef().child(response.fields.key).remove();
 
                     }
 
@@ -226,7 +302,9 @@ class DropBoxController {
 
     getFirebaseRef(path){
 
-        if (!path) path = this.currentFolder.join('/');
+        if (!path) {
+        path = this.currentFolder.join('/');
+    }
 
         return firebase.database().ref(path);
 
@@ -283,7 +361,7 @@ class DropBoxController {
            promises.push(new Promise((resolve,reject)=>{
 
 
-            let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name)        
+            let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);       
 
             let task = fileRef.put(file);
 
@@ -292,7 +370,7 @@ class DropBoxController {
                 this.uploadProgress({
                     loaded: snapshot.bytesTransferred,
                     total: snapshot.totalBytes
-                }, file)
+                }, file);
 
             },error=>{
 
